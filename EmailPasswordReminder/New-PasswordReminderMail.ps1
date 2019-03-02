@@ -7,7 +7,7 @@
   Author:         Andrew McFee
   Creation Date:  06/10/2017
   Purpose: This script does not need to be run on a domain controller. It requires the html document 'PasswordReminderBody.html' along
-  with it to work. You can edit this html file to change the wording/format of the Password reminder email. 
+  with it to work. You can edit this html file to change the wording/format of the Password reminder email.
 #>
 
 # USER DECLARATIONS - Put Variables here that you want to be changed.
@@ -34,7 +34,7 @@ function Start-6DGInvokeADPSSession {
 # FUNCTIONS
 
 function Get-6DGExchangeServer {
-  param 
+  param
   (
       [switch]$mailbox,
       [switch]$CAS,
@@ -43,7 +43,7 @@ function Get-6DGExchangeServer {
       [switch]$edge,
       [switch]$getAll
   )
-  
+
   $roleMask += 2 * [boolean]$mailbox
   $roleMask += 4 * [boolean]$CAS
   $roleMask += 16 * [boolean]$UM
@@ -54,13 +54,13 @@ function Get-6DGExchangeServer {
 
   $exchangeServers = (Get-ADObject -SearchBase $configNamingContext -Filter {objectclass -eq "msExchExchangeServer"} -properties msexchcurrentserverroles)
   $exchangeServers = $exchangeServers | Where-Object {($_.msexchcurrentserverroles -band $roleMask) -eq $roleMask}
-  
-  
+
+
   [array]$exchangeServers = $exchangeServers | Select-Object -ExpandProperty name
   if (!$getAll) {
       $exchangeServers = $exchangeServers[0]
   }
-      
+
   Write-Output ($exchangeServers)
 }
 
@@ -84,7 +84,7 @@ Function New-PasswordReminderMail {
         [String]$Mailbody,
         [Switch]$Test
     )
-    
+
     Begin {
         $body = Get-Content $Mailbody
         $users = get-aduser -filter 'mail -ne "$null"' -Properties passwordlastset, passwordneverexpires, mail | Where-Object {($_.passwordneverexpires -ne $true) -and ($_.passwordlastset -ne $null) -and ($_.enabled)}
@@ -94,16 +94,16 @@ Function New-PasswordReminderMail {
 
     Process {
         ForEach ($User in $users) {
-        
+
             $body = Get-Content $Mailbody
             $expiryDay = ($user.passwordlastset + $maxPasswordAge).ToLongDateString()
             $timeToExpire = $user.passwordlastset + $maxPasswordAge - $date
             $daysToExpire = [math]::round($timeToExpire.totaldays, 0)
             $name = $user.name
-            $owaAdd = (Get-OWAVirtualDirectory | Select -ExpandProperty ExternalURL).AbsoluteURI
+            $owaAdd = (Get-OWAVirtualDirectory | Select-Object -ExpandProperty ExternalURL).AbsoluteURI
 
             if ($daystowarn -contains $daysToExpire -or $daystoexpire -eq 0) {
-          
+
                 $body = Get-Content $Mailbody
                 $mail = (Get-Mailbox $user.mail)
                 $UserMobiles = Get-ActiveSyncDeviceStatistics -Mailbox $Mail.Alias | Where-Object {$_.LastSuccessSync -gt ((Get-Date).AddDays(-45))}
@@ -118,7 +118,7 @@ Function New-PasswordReminderMail {
                         DeviceOS    = $Mobile.DeviceOS
                         LastSync    = $Mobile.LastSuccessSync
                     }
-          
+
                     $MobileObj = New-Object -TypeName psobject -Property $props
                     $MobileArr += $MobileObj
 
@@ -146,7 +146,7 @@ Function New-PasswordReminderMail {
                     $body = $body.replace('$daysToExpire', $daysToExpire)
                     $body = $body.replace('$mobiledevices', $MobileDevices)
 
-            
+
                 }
                 Else{
                     $body = $body.replace('$expiryDay', $expiryDay)

@@ -60,7 +60,7 @@ Function Get-NetVersionText( $NetVersion = 0) {
         $NETVERSION_46 = '4.6'; $NETVERSION_461 = '4.6.1'; $NETVERSION_462 = '4.6.2'; $NETVERSION_462WS2016 = '4.6.2 (WS2016)'; $NETVERSION_47 = '4.7';
         $NETVERSION_471 = '4.7.1'
     }
-    return ($NetVersions.GetEnumerator() | Where {$NetVersion -ge $_.Name} | Sort Name -Descending | Select -First 1).Value
+    return ($NetVersions.GetEnumerator() | Where-Object {$NetVersion -ge $_.Name} | Sort-Object Name -Descending | Select-Object -First 1).Value
 }
 
 Function Get-NETVersionBlockade {
@@ -115,8 +115,8 @@ ForEach ( $Computer in $ComputerName) {
         $NetVersion = Get-NETVersion $Computer
         If ( $NetVersion -gt 0) {
 	    $Blockade= @()
-	    $NetVersionTags | ForEach-Object { 
-                If( Get-NETVersionBlockade $Computer ('BlockNetFramework{0}' -f $_)) { $Blockade+= $_ } 
+	    $NetVersionTags | ForEach-Object {
+                If( Get-NETVersionBlockade $Computer ('BlockNetFramework{0}' -f $_)) { $Blockade+= $_ }
             }
             $Props = [ordered]@{
                 'Computer'     = $Computer
