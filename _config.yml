@@ -1,1 +1,3 @@
-theme: orderedlist-minimal
+remote_theme: benbalter/retlab
+plugins:
+    - jekyll-remote-theme
