@@ -129,7 +129,7 @@ Write-Output "*".PadRight(25,"*")
 # To target a specific OU - use the -searchBase Parameter -https://docs.microsoft.com/en-us/powershell/module/addsadministration/get-aduser
 # You can target specific group members using Get-AdGroupMember, explained here https://www.youtube.com/watch?v=4CX9qMcECVQ 
 # based on earlier version but method still works here.
-$users = get-aduser -filter {(Enabled -eq $true) -and (PasswordNeverExpires -eq $false)} -properties Name, PasswordNeverExpires, PasswordExpired, PasswordLastSet, EmailAddress | where { $_.passwordexpired -eq $false }
+$users = get-aduser -filter {(Enabled -eq $true) -and (PasswordNeverExpires -eq $false)} -properties Name, PasswordNeverExpires, PasswordExpired, PasswordLastSet, EmailAddress | Where-Object { $_.passwordexpired -eq $false }
 # Count Users
 $usersCount = ($users | Measure-Object).Count
 Write-Output "Found $usersCount User Objects"
@@ -188,7 +188,7 @@ foreach ($user in $users)
 $colUsersCount = ($colUsers | Measure-Object).Count
 Write-Output "$colusersCount Users processed"
 # Select Users to Notify
-$notifyUsers = $colUsers | where { $_.DaysToExpire -le $expireInDays}
+$notifyUsers = $colUsers | Where-Object { $_.DaysToExpire -le $expireInDays}
 $notifiedUsers = @()
 $notifyCount = ($notifyUsers | Measure-Object).Count
 Write-Output "$notifyCount Users with expiring passwords within $expireInDays Days"
@@ -310,7 +310,7 @@ if($logging)
         }
     }
 }
-$notifiedUsers | select UserName,Name,EmailAddress,PasswordSet,DaysToExpire,ExpiresOn | sort DaystoExpire | FT -autoSize
+$notifiedUsers | Select-Object UserName,Name,EmailAddress,PasswordSet,DaysToExpire,ExpiresOn | Sort-Object DaystoExpire | Format-Table -autoSize
 
 $stop = [datetime]::Now
 $runTime = New-TimeSpan $start $stop
