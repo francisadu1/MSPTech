@@ -4,5 +4,5 @@ function Test-UserExists{
     $SAMAccountName
     )
 
-    @(Get-ADUser -LDAPFilter "(samaccountname=$SAMAccountName)") .Count -ne 0
+    @(Get-ADUser -LDAPFilter "(samaccountname=$SAMAccountName)").Count -ne 0
 }
