@@ -1,28 +1,24 @@
 <#
     .SYNOPSIS
-    Service Desk - Office 365 Password Expiry Reminder Email
+    Service Desk - Office 365 Password Expiry Email Reminder script
 
     .DESCRIPTION
-    This script has been created in order to send out Password Change Reminder Emails for those user accounts that are due to expire in X Days
-    This script does not need to be run on a domain controller. It requires the html document 'PasswordReminderBody.html' along
-    with it to work. You can edit this html file to change the wording/format of the Password reminder email.
+    This script has been created in order to send out Password Change Reminder Emails for those user accounts that are due to expire in X number of days.
+    The number of days is extracted from the settings configured Group Policy.
+    It requires the html document 'PasswordReminderBody.html' along with it to work.
+    You can edit the html file to change the wording/format of the Password reminder email.
 
     -----------------
     Authenticate your device or application directly with an Office 365 mailbox, and send mail using SMTP client submission
     This option supports most usage scenarios and it's the easiest to set up. Choose this option when:
-
     You want to send email from a third-party hosted application, service, or device.
-
     You want to send email to people inside and outside your organization.
-
     To configure your device or application, connect directly to Office 365 using the SMTP client submission endpoint smtp.office365.com.
-
     Each device/application must be able to authenticate with Office 365. The email address of the account that's used to authenticate with Office 365 will appear as the sender of messages from the device/application.
-
     How to set up SMTP client submission
-    Enter the following settings directly on your device or in the application as their guide instructs (it might use different terminology than this article). As long as your scenario meets the requirements for SMTP client submission, the following settings will enable you to send email from your device or application.
+    Enter the following settings directly on your device or in the application as their guide instructs (it might use different terminology than this article).
+    As long as your scenario meets the requirements for SMTP client submission, the following settings will enable you to send email from your device or application.
 
-    Device or Application setting	Value
     Server/smart host	smtp.office365.com
     Port	Port 587 (recommended) or port 25
     TLS/ StartTLS	Enabled
@@ -48,6 +44,8 @@ Import-Module ActiveDirectory
 
 # USER DECLARATIONS - Put Variables here that you want to be changed.
 
+
+# Functions
 
 function Get-XADUserPasswordExpirationDate() {
 
