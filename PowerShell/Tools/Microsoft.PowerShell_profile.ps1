@@ -1,7 +1,7 @@
 <#
 Script Name   : Microsoft.PowerShellISE_profile.ps1
 Author        : Luke Leigh
-Created       : 31/03/2017
+Created       : 16/03/2019
 Notes         : This script has been created in order pre-configure the following setting:-
 - Shell Title - Rebranded
 - Shell Dimensions configured to 150 Width x 45 Height
@@ -86,6 +86,7 @@ New-Alias -Name "n+" -Value "C:\Program Files\Notepad++\notepad++.exe"
 New-Alias -Name "VSCode" -Value "C:\Users\Luke\AppData\Local\Programs\Microsoft VS Code\Code.exe"
 New-Alias -Name "Stop-Torrents" -Value "Personal:\Documents\TransmissionCleaner\TransmissionCleaner.exe"
 New-Alias -Name "LazyWinAdmin" -Value ".\LazyWinAdmin-v0.4\LazyWinAdmin.ps1"
+New-Alias -Name "Get-Uptime" -Value ".\PowerShell\Tools\Get-Uptime.ps1"
 
 # Script Functions
 function Stop-Outlook {
@@ -199,31 +200,38 @@ function Get-PatchTue {
 
 
 	function Select-FolderLocation {
-		[Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms") | Out-Null
-		[System.Windows.Forms.Application]::EnableVisualStyles()
-		$browse = New-Object System.Windows.Forms.FolderBrowserDialog
-		$browse.SelectedPath = "C:\"
-		$browse.ShowNewFolderButton = $true
-		$browse.Description = "Select a directory for your report"
+    [Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms") | Out-Null
+    [System.Windows.Forms.Application]::EnableVisualStyles()
+    $browse = New-Object System.Windows.Forms.FolderBrowserDialog
+    $browse.SelectedPath = "C:\"
+    $browse.ShowNewFolderButton = $true
+    $browse.Description = "Select Source Directory"
 
-		$loop = $true
-		while ($loop) {
-			if ($browse.ShowDialog() -eq "OK") {
-				$loop = $false
-			}
-			else {
-				$res = [System.Windows.Forms.MessageBox]::Show("You clicked Cancel. Would you like to try again or exit?", "Select a location", [System.Windows.Forms.MessageBoxButtons]::RetryCancel)
-				if ($res -eq "Cancel") {
-					#Ends script
-					return
-				}
-			}
-		}
-		$browse.SelectedPath
-		$browse.Dispose()
-	}
+    $loop = $true
+    while ($loop) {
+        if ($browse.ShowDialog() -eq "OK") {
+            $loop = $false
+        }
+        else {
+            $res = [System.Windows.Forms.MessageBox]::Show("You clicked Cancel. Would you like to try again or exit?", "Select a location", [System.Windows.Forms.MessageBoxButtons]::RetryCancel)
+            if ($res -eq "Cancel") {
+                #Ends script
+                return
+            }
+        }
+    }
+    $browse.SelectedPath
+    $browse.Dispose()
+}
 
 
+$FolderLocation = Select-FolderLocation
+if (![string]::IsNullOrEmpty($ReferenceFolder)) {
+    Write-Host "You selected the directory: $FolderLocation"
+}
+else {
+    "You did not select a directory."
+}
 
 function Save-Password {
 	<# Example
@@ -344,7 +352,7 @@ $console.WindowSize = $size
 
 #--------------------
 # Fresh Start
-Clear-Host
+# Clear-Host
 
 #--------------------
 # Display Banner for Personal Profile
@@ -355,6 +363,7 @@ Write-Host "--------------------------------------------------------------------
 #--------------------
 # Greeting based on day of week
 New-Greeting
+
 
 #--------------------
 # Display time and Stop the timer
