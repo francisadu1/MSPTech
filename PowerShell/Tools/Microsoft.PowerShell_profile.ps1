@@ -100,6 +100,7 @@ function Select-FolderLocation {
 
 
 function Get-Appointments {
+	Set-Location -Path 'PowerShellScripts:'
 	$OutlookAppointments = .\ProfileFunctions\Get-OutlookAppointments.ps1
 
 	Write-Host "--------------------------------------------------------------------------------"
@@ -134,6 +135,7 @@ function Test-IsAdmin {
 
 	$identity = [Security.Principal.WindowsIdentity]::GetCurrent()
 	$principal = New-Object Security.Principal.WindowsPrincipal $identity
+	$principal.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
 }
 
 function Get-ScriptDirectory {
@@ -268,14 +270,42 @@ function Get-Password {
 		}
 	}
 
+	
+function Stop-RickRoll {
+	
+	<#
+	Script Name : RickRollSpotify.ps1
+	Author      : Luke Leigh
+	Created     : 31/03/2017
+	Notes       : This script has been created in order pre-configure the following setting:-
+	- Only allow Spotify to play Rick Astley songs before lunch
+	
+	Additional  : Can obviously be changed to prevent your preferred annoying artist from playing
+	#>
+	
+		Do
+		{
+			Start-Sleep -s 15
+			$NotRick = Get-Process -Name Spotify |
+			Where-Object MainWindowHandle -NE 0
+			$NotRick |
+			Where-Object MainWindowTitle -NotMatch 'Rick Astley' |
+			Stop-Process -Force
+			$Time = Get-Date -DisplayHint Time
+		}
+		
+	Until ($Time -gt '23:59:00')
+}	
+	
+
 	#--------------------
 	# Configure $PSModulePath variable
-	(([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
-	[Environment]::GetEnvironmentVariable("PSModulePath")
-	$p = [Environment]::GetEnvironmentVariable("PSModulePath")
-	$ModuleDrive = Join-Path -Resolve -Path "$PersonalOneDrive" -ChildPath .\Documents\WindowsPowerShell\Modules
-	$p += ";$ModuleDrive"
-	[Environment]::SetEnvironmentVariable("PSModulePath",$p)
+	# (([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
+	# [Environment]::GetEnvironmentVariable("PSModulePath")
+	# $p = [Environment]::GetEnvironmentVariable("PSModulePath")
+	# $ModuleDrive = Join-Path -Resolve -Path "$PersonalOneDrive" -ChildPath .\Documents\WindowsPowerShell\Modules
+	# $p += ";$ModuleDrive"
+	# [Environment]::SetEnvironmentVariable("PSModulePath",$p)
 
 	#--------------------
 	# Display running as Administrator in WindowTitle
@@ -286,10 +316,12 @@ function Get-Password {
 		#--------------------
 		# Update PowerShell Help
 		$PatchTue = Get-PatchTue -month (Get-Date).Month -year (Get-Date).Year
-		if ((get-date).ToShortDateString() = ($PatchTue).ToShortDateString()) {
+		$ScheduleDate = (get-date).ToShortDateString()
+		$CompareDate = ($PatchTue).ToShortDateString()
+		if ($ScheduleDate -eq $CompareDate){
 			Update-Help -Force
 		}
-
+		
 		#--------------------
 		# Configure LocalHost TrustedHosts value for remote WMI access over http/https
 		$TrustedHosts = Get-Item WSMAN:\localhost\Client\TrustedHosts |
@@ -311,18 +343,18 @@ else
 $console = $host.UI.RawUI
 
 $buffer = $console.BufferSize
-$buffer.Width = 150
+$buffer.Width = 170
 $buffer.Height = 9000
 $console.BufferSize = $buffer
 
 $size = $console.WindowSize
-$size.Width = 150
+$size.Width = 170
 $size.Height = 45
 $console.WindowSize = $size
 
 # Configure PSDrives
 
-$DriveRoot = "$env:HOMEDRIVE\"
+$DriveRoot = "$env:HOMEDRIVE"
 $Git = "$DriveRoot\GitRepos\"
 $GitExist = Test-Path -Path "$Git"
 if ($GitExist = $true) {
@@ -333,26 +365,29 @@ if ($GitExist = $true) {
 			New-PSDrive -Name $item.Name -PSProvider "FileSystem" -Root $item.FullName
 		}
 	}
-	$PersonalOneDrive = $env:OneDriveConsumer
-	$OneDriveConsumer = Test-Path -Path $PersonalOneDrive
-	if ($OneDriveConsumer = $true) {
-		New-PSDrive -Name "OneDrive" -PSProvider "FileSystem" -Root $PersonalOneDrive
-	}
-	$CompanyOneDrive = $env:OneDriveCommercial
-	$OneDriveCommercial = Test-Path -Path $CompanyOneDrive
-	if ($OneDriveCommercial = $true) {
-		New-PSDrive -Name "OneDriveBusiness" -PSProvider "FileSystem" -Root $CompanyOneDrive
-	}
-	Set-Location -Path PowerShellScripts:
+
+	# $PersonalOneDrive = $env:OneDriveConsumer
+	# $OneDriveConsumer = Test-Path -Path $PersonalOneDrive
+	# if ($OneDriveConsumer = $true) {
+	# 	New-PSDrive -Name "OneDrive" -PSProvider "FileSystem" -Root $PersonalOneDrive
+
+	# }
+	# $CompanyOneDrive = $env:OneDriveCommercial
+	# $OneDriveCommercial = Test-Path -Path $CompanyOneDrive
+	# if ($OneDriveCommercial = $true) {
+	# 	New-PSDrive -Name "OneDriveBusiness" -PSProvider "FileSystem" -Root $CompanyOneDrive
+	# }
+	# Set-Location -Path PowerShellScripts:
 }
+
 
 # Personal Alias List
 New-Alias -Name "np" -Value "C:\WINDOWS\system32\notepad.exe"
 New-Alias -Name "n+" -Value "C:\Program Files\Notepad++\notepad++.exe"
 New-Alias -Name "VSCode" -Value "C:\Users\Luke\AppData\Local\Programs\Microsoft VS Code\Code.exe"
-New-Alias -Name "Stop-Torrents" -Value "Personal:\Documents\TransmissionCleaner\TransmissionCleaner.exe"
-New-Alias -Name "LazyWinAdmin" -Value ".\LazyWinAdmin-v0.4\LazyWinAdmin.ps1"
-#New-Alias -Name "Get-Uptime" -Value ".\Functions\Get-Uptime.ps1"
+# New-Alias -Name "Stop-Torrents" -Value "Personal:\Documents\TransmissionCleaner\TransmissionCleaner.exe"
+# New-Alias -Name "LazyWinAdmin" -Value ".\LazyWinAdmin-v0.4\LazyWinAdmin.ps1"
+# New-Alias -Name "Get-Uptime" -Value ".\Functions\Get-Uptime.ps1"
 
 
 #--------------------
