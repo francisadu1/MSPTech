@@ -378,7 +378,7 @@ function New-PSDrives {
 }
 
 
-if ($env:USERDNSDOMAIN -eq 'domain.leigh-services.com' ) {
+if ($env:USERDOMAIN -eq 'DARTHVADER' ) {
 	$PersonalOneDrive = $env:OneDriveConsumer
 	$OneDriveConsumer = Test-Path -Path $PersonalOneDrive
 	if ($OneDriveConsumer = $true) {
