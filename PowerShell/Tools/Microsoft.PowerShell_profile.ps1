@@ -17,27 +17,26 @@ OneDrive              C:\Users\Luke\OneDrive
 PowerRepo             C:\GitRepos\PowerRepo
 
 - Sets starting file path to Scripts folder on ScriptsDrive
-- Loads Several Functions
+- Loads the following Functions
 	CommandType     Name
 	-----------     ----
+	Function        Stop-Outlook
+	Function        Select-FolderLocation
 	Function        Get-Appointments
-	Function        Get-Password
-	Function        Get-PatchTue
+	Function        New-Greeting
+	Function        Test-IsAdmin
 	Function        Get-ScriptDirectory
 	Function        LoadProfile
-	Function        New-Greeting
 	Function        New-ObjectToHashTable
+	Function        Get-PatchTue
 	Function        Save-Password
-	Function        Select-FolderLocation
-	Function        Stop-Outlook
-	Function        Test-IsAdmin
+	Function        Get-Password
 
-- Display whether or not running as Administrator in the WindowTitle
-- Clears the display
-
-- Display Date and Time in the Console Windows
-- Script Greeting based on day of week
-- Display whether or not running as Administrator in the Console Window
+Displays
+- whether or not running as Administrator in the WindowTitle
+- the Date and Time in the Console Window
+- a Greeting based on day of week
+- whether or not running as Administrator in the Console Window
 
 When run from Elevated Prompt
 - Preconfigures Executionpolicy settings per PowerShell Process Unrestricted
@@ -62,7 +61,6 @@ function Stop-Outlook {
 }
 
 function Select-FolderLocation {
-
     <#
         Example.
         $directoryPath = Select-FolderLocation
@@ -73,14 +71,12 @@ function Select-FolderLocation {
             "You did not select a directory."
         }
     #>
-
     [Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms") | Out-Null
     [System.Windows.Forms.Application]::EnableVisualStyles()
     $browse = New-Object System.Windows.Forms.FolderBrowserDialog
     $browse.SelectedPath = "C:\"
     $browse.ShowNewFolderButton = $true
     $browse.Description = "Select a directory for your report"
-
     $loop = $true
     while ($loop) {
         if ($browse.ShowDialog() -eq "OK") {
@@ -98,14 +94,11 @@ function Select-FolderLocation {
     $browse.Dispose()
 }
 
-
 function Get-Appointments {
-	Set-Location -Path 'PowerShellScripts:'
-	$OutlookAppointments = .\ProfileFunctions\Get-OutlookAppointments.ps1
-
-	Write-Host "--------------------------------------------------------------------------------"
+	$OutlookAppointments = PowerShellScripts:\ProfileFunctions\Get-OutlookAppointments.ps1
+	Write-Verbose -Message "--------------------------------------------------------------------------------"
 	$OutlookAppointments
-	Write-Host "--------------------------------------------------------------------------------"
+	Write-Verbose -Message "--------------------------------------------------------------------------------"
 }
 
 function New-Greeting {
@@ -125,18 +118,26 @@ function Test-IsAdmin {
 	<#
 	.Synopsis
 	Tests if the user is an administrator
-
 	.Description
 	Returns true if a user is an administrator, false if the user is not an administrator
-
 	.Example
 	Test-IsAdmin
 	#>
-
 	$identity = [Security.Principal.WindowsIdentity]::GetCurrent()
-	$principal = New-Object Security.Principal.WindowsPrincipal $identity
-	$principal.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
+    $principal = New-Object Security.Principal.WindowsPrincipal $identity
+    $principal.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
 }
+
+function Show-IsAdminOrNot {
+	$IsAdmin = Test-IsAdmin
+	if ( $IsAdmin -eq "False") {
+		Write-Warning -Message "Admin Privileges!"
+	}
+	else {
+		Write-Warning -Message "User Privileges"
+	}
+}
+
 
 function Get-ScriptDirectory {
 	Split-Path -Parent $PSCommandPath
@@ -157,19 +158,16 @@ function LoadProfile {
 		}
 	}
 
-function New-ObjectToHashTable {
-	param
-	(
-		[Parameter(Mandatory ,ValueFromPipeline)]
-		$object
-		)
-		process
-		{
+function New-ObjectToHashTable{
+	param([
+		Parameter(Mandatory ,ValueFromPipeline)]
+		$object)
+		process	{
 			$object |
 			Get-Member -MemberType *Property |
 			Select-Object -ExpandProperty Name |
 			Sort-Object |
-			ForEach-Object { [PSCustomObject ]@{
+			ForEach-Object {[PSCustomObject ]@{
 				Item = $_
 				Value = $object. $_
 			}
@@ -192,8 +190,7 @@ function Get-PatchTue {
 	#>
 	param(
 		[string]$month = (get-date).month,
-		[string]$year = (get-date).year
-		)
+		[string]$year = (get-date).year)
 		$firstdayofmonth = [datetime] ([string]$month + "/1/" + [string]$year)
 		(0..30 | ForEach-Object {
 			$firstdayofmonth.adddays($_)
@@ -253,89 +250,57 @@ function Get-Password {
 	SomeSecretPassword
 
 	#>
-	param(
-		[Parameter(Mandatory)]
-		[string]$Label
-		)
-		$filePath = "C:\MyPasswords\$Label.txt"
-		if (-not (Test-Path -Path $filePath)) {
-			throw "The password with Label [$($Label)] was not found!"
-		}
-
-		$password = Get-Content -Path $filePath | ConvertTo-SecureString
-		$decPassword = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($password))
-		[pscustomobject]@{
-			Label = $Label
-			EncryptedString = $decPassword
-		}
+	param([Parameter(Mandatory)]
+	[string]$Label)
+	$directoryPath = Select-FolderLocation
+	if (![string]::IsNullOrEmpty($directoryPath)) {
+		Write-Host "You selected the directory: $directoryPath"
 	}
-
-	
-function Stop-RickRoll {
-	
-	<#
-	Script Name : RickRollSpotify.ps1
-	Author      : Luke Leigh
-	Created     : 31/03/2017
-	Notes       : This script has been created in order pre-configure the following setting:-
-	- Only allow Spotify to play Rick Astley songs before lunch
-	
-	Additional  : Can obviously be changed to prevent your preferred annoying artist from playing
-	#>
-	
-		Do
-		{
-			Start-Sleep -s 15
-			$NotRick = Get-Process -Name Spotify |
-			Where-Object MainWindowHandle -NE 0
-			$NotRick |
-			Where-Object MainWindowTitle -NotMatch 'Rick Astley' |
-			Stop-Process -Force
-			$Time = Get-Date -DisplayHint Time
-		}
-		
-	Until ($Time -gt '23:59:00')
-}	
-	
-
-	#--------------------
-	# Configure $PSModulePath variable
-	# (([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
-	# [Environment]::GetEnvironmentVariable("PSModulePath")
-	# $p = [Environment]::GetEnvironmentVariable("PSModulePath")
-	# $ModuleDrive = Join-Path -Resolve -Path "$PersonalOneDrive" -ChildPath .\Documents\WindowsPowerShell\Modules
-	# $p += ";$ModuleDrive"
-	# [Environment]::SetEnvironmentVariable("PSModulePath",$p)
-
-	#--------------------
-	# Display running as Administrator in WindowTitle
-	if(Test-IsAdmin) {
-		# Configure Execution Policy
-		Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process -Force
-
-		#--------------------
-		# Update PowerShell Help
-		$PatchTue = Get-PatchTue -month (Get-Date).Month -year (Get-Date).Year
-		$ScheduleDate = (get-date).ToShortDateString()
-		$CompareDate = ($PatchTue).ToShortDateString()
-		if ($ScheduleDate -eq $CompareDate){
-			Update-Help -Force
-		}
-		
-		#--------------------
-		# Configure LocalHost TrustedHosts value for remote WMI access over http/https
-		$TrustedHosts = Get-Item WSMAN:\localhost\Client\TrustedHosts |
-		Select-Object -Property *
-		if ($TrustedHosts.Value = $false) {
-			Set-Item WSMAN:\localhost\Client\TrustedHosts -value *
-		}
-		$host.UI.RawUI.WindowTitle = "$($env:USERNAME) Elevated Shell"
+	$filePath = "$directoryPath\$Label.txt"
+	if (-not (Test-Path -Path $filePath)) {
+		throw "The password with Label [$($Label)] was not found!"
 	}
-else
-{
-	$host.UI.RawUI.WindowTitle = "$($env:USERNAME) Non-elevated Shell"
+	$password = Get-Content -Path $filePath | ConvertTo-SecureString
+	$decPassword = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($password))
+	[pscustomobject]@{
+		Label = $Label
+		EncryptedString = $decPassword
+	}
 }
 
+
+
+#--------------------
+# Configure $PSModulePath variable
+[Environment]::GetEnvironmentVariable("PSModulePath")
+$p = [Environment]::GetEnvironmentVariable("PSModulePath")
+$ModuleDrive = Join-Path -Resolve -Path "$env:OneDriveConsumer" -ChildPath .\Documents\WindowsPowerShell\Modules
+$p += ";$ModuleDrive"
+[Environment]::SetEnvironmentVariable("PSModulePath",$p)
+
+#--------------------
+# Display running as Administrator in WindowTitle
+if(Test-IsAdmin) {
+# Configure Execution Policy
+Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process -Force
+#--------------------
+# Update PowerShell Help
+$PatchTue = Get-PatchTue -month (Get-Date).Month -year (Get-Date).Year
+if ((get-date).ToShortDateString() -eq ($PatchTue).ToShortDateString()) {
+	Update-Help -Force
+}
+
+#--------------------
+# Configure LocalHost TrustedHosts value for remote WMI access over http/https
+$TrustedHosts = Get-Item WSMAN:\localhost\Client\TrustedHosts | Select-Object -Property *
+if ($TrustedHosts.Value = $false) {
+	Set-Item WSMAN:\localhost\Client\TrustedHosts -value *
+}
+$host.UI.RawUI.WindowTitle = "$($env:USERNAME) Elevated Shell"
+}
+else{
+	$host.UI.RawUI.WindowTitle = "$($env:USERNAME) Non-elevated Shell"
+}
 
 
 #--------------------
@@ -343,18 +308,18 @@ else
 $console = $host.UI.RawUI
 
 $buffer = $console.BufferSize
-$buffer.Width = 170
+$buffer.Width = 150
 $buffer.Height = 9000
 $console.BufferSize = $buffer
 
 $size = $console.WindowSize
-$size.Width = 170
+$size.Width = 150
 $size.Height = 45
 $console.WindowSize = $size
 
+#--------------------
 # Configure PSDrives
-
-$DriveRoot = "$env:HOMEDRIVE"
+$DriveRoot = "$env:HOMEDRIVE\"
 $Git = "$DriveRoot\GitRepos\"
 $GitExist = Test-Path -Path "$Git"
 if ($GitExist = $true) {
@@ -365,34 +330,24 @@ if ($GitExist = $true) {
 			New-PSDrive -Name $item.Name -PSProvider "FileSystem" -Root $item.FullName
 		}
 	}
-
-	# $PersonalOneDrive = $env:OneDriveConsumer
-	# $OneDriveConsumer = Test-Path -Path $PersonalOneDrive
-	# if ($OneDriveConsumer = $true) {
-	# 	New-PSDrive -Name "OneDrive" -PSProvider "FileSystem" -Root $PersonalOneDrive
-
-	# }
-	# $CompanyOneDrive = $env:OneDriveCommercial
-	# $OneDriveCommercial = Test-Path -Path $CompanyOneDrive
-	# if ($OneDriveCommercial = $true) {
-	# 	New-PSDrive -Name "OneDriveBusiness" -PSProvider "FileSystem" -Root $CompanyOneDrive
-	# }
-	# Set-Location -Path PowerShellScripts:
+	$PersonalOneDrive = $env:OneDriveConsumer
+	$OneDriveConsumer = Test-Path -Path $PersonalOneDrive
+	if ($OneDriveConsumer = $true) {
+		New-PSDrive -Name "OneDrive" -PSProvider "FileSystem" -Root $env:OneDriveConsumer
+	}
+	$CompanyOneDrive = $env:OneDriveCommercial
+	$OneDriveCommercial = Test-Path -Path $CompanyOneDrive
+	if ($OneDriveCommercial = $true) {
+		New-PSDrive -Name "OneDriveBusiness" -PSProvider "FileSystem" -Root $env:OneDriveCommercial
+	}
+	Set-Location -Path PowerShellScripts:
 }
-
-
-# Personal Alias List
-New-Alias -Name "np" -Value "C:\WINDOWS\system32\notepad.exe"
-New-Alias -Name "n+" -Value "C:\Program Files\Notepad++\notepad++.exe"
-New-Alias -Name "VSCode" -Value "C:\Users\Luke\AppData\Local\Programs\Microsoft VS Code\Code.exe"
-# New-Alias -Name "Stop-Torrents" -Value "Personal:\Documents\TransmissionCleaner\TransmissionCleaner.exe"
-# New-Alias -Name "LazyWinAdmin" -Value ".\LazyWinAdmin-v0.4\LazyWinAdmin.ps1"
-# New-Alias -Name "Get-Uptime" -Value ".\Functions\Get-Uptime.ps1"
 
 
 #--------------------
 # Fresh Start
 # Clear-Host
+
 
 #--------------------
 # Display Banner for Personal Profile
@@ -402,6 +357,7 @@ Write-Host "--------------------------------------------------------------------
 
 #--------------------
 # Greeting based on day of week
+Show-IsAdminOrNot
 New-Greeting
 
 
