@@ -18,8 +18,25 @@ PowerRepo             C:\GitRepos\PowerRepo
 
 - Sets starting file path to Scripts folder on ScriptsDrive
 - Loads the following Functions
-	CommandType     Name
-	-----------     ----
+	CommandType     		Name
+	-----------     		----
+	Function        Stop-Outlook
+	Function        Select-FolderLocation
+	Function        Get-Appointments
+	Function        New-Greeting
+	Function        Test-IsAdmin
+	Function        Show-IsAdminOrNot
+	Function        Get-ScriptDirectory
+	Function        LoadProfile
+	Function        New-ObjectToHashTable
+	Function        Get-PatchTue
+	Function        Save-Password
+	Function        Get-Password
+	Function        Show-PSDrive
+	Function        Get-ContainedCommand
+	Function        Show-ProfileFunctions
+
+
 	Function        Stop-Outlook
 	Function        Select-FolderLocation
 	Function        Get-Appointments
@@ -95,7 +112,7 @@ function Select-FolderLocation {
 }
 
 function Get-Appointments {
-	$OutlookAppointments = PowerShellScripts:\ProfileFunctions\Get-OutlookAppointments.ps1
+	$OutlookAppointments = & "$PSScriptRoot\ProfileTools\Get-OutlookAppointments.ps1"
 	Write-Verbose -Message "--------------------------------------------------------------------------------"
 	$OutlookAppointments
 	Write-Verbose -Message "--------------------------------------------------------------------------------"
@@ -331,15 +348,31 @@ $console.WindowSize = $size
 
 #--------------------
 # Configure PSDrives
-$DriveRoot = "$env:HOMEDRIVE\"
-$Git = "$DriveRoot\GitRepos\"
-$GitExist = Test-Path -Path "$Git"
-if ($GitExist = $true) {
-	$PSDrivePaths = Get-ChildItem -Path "$Git\"
-    foreach ($item in $PSDrivePaths) {
-		$paths = Test-Path -Path $item.FullName
-        if ($paths = $true) {
-			New-PSDrive -Name $item.Name -PSProvider "FileSystem" -Root $item.FullName
+
+
+function New-GitDrives {
+	$PSRootFolder = Select-FolderLocation
+	$Exist = Test-Path -Path $PSRootFolder
+	if ($Exist = $true) {
+		$PSDrivePaths = Get-ChildItem -Path "$PSRootFolder\"
+		foreach ($item in $PSDrivePaths) {
+			$paths = Test-Path -Path $item.FullName
+			if ($paths = $true) {
+				New-PSDrive -Name $item.Name -PSProvider "FileSystem" -Root $item.FullName
+			}
+		}
+	}
+}
+
+function New-PSDrives {
+	$PSRootFolder = Select-FolderLocation
+	if ($GitExist = $true) {
+		$PSDrivePaths = Get-ChildItem -Path "$Git\"
+		foreach ($item in $PSDrivePaths) {
+			$paths = Test-Path -Path $item.FullName
+			if ($paths = $true) {
+				New-PSDrive -Name $item.Name -PSProvider "FileSystem" -Root $item.FullName
+			}
 		}
 	}
 }
@@ -370,20 +403,18 @@ if ($env:USERDNSDOMAIN -eq 'domain.leigh-services.com' ) {
 
 
 #--------------------
-# Display Banner for Personal Profile
-Write-Host "--------------------------------------------------------------------------------" -ForegroundColor Yellow
-Write-Host "-------------------- All personalisations have been loaded ---------------------" -ForegroundColor Yellow
-Write-Host "--------------------------------------------------------------------------------" -ForegroundColor Yellow
-
-#--------------------
-# Greeting based on day of week
+# Profile Starts here!
 Show-IsAdminOrNot
 New-Greeting
+Write-Host ""
+Write-Host "The following Functions are now available in this session"
+Show-ProfileFunctions
+
+
 
 
 #--------------------
-# Display time and Stop the timer
+# Display Profile Load time and Stop the timer
 Write-Host "Personal Profile took" $Stopwatch.Elapsed.Milliseconds"ms."
 $Stopwatch.Stop()
-
 # End --------------#>
