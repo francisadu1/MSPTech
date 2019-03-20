@@ -1,25 +1,27 @@
 <#
-Script Name   : Microsoft.PowerShellISE_profile.ps1
-Author        : Luke Leigh
-Created       : 16/03/2019
-Notes         : This script has been created in order pre-configure the following setting:-
-- Shell Title - Rebranded
-- Shell Dimensions configured to 150 Width x 45 Height
-- Buffer configured to 9000 lines
-- Creates GitHub Local Repository PSDrives and Onedrive PSDrives
-EG
-Name                  Root
-----                  ----
-blogsite              C:\GitRepos\blogsite
-CiscoMeraki           C:\GitRepos\CiscoMeraki
-MSPTech               C:\GitRepos\MSPTech
-OneDrive              C:\Users\Luke\OneDrive
-PowerRepo             C:\GitRepos\PowerRepo
+	Script Name   : Microsoft.PowerShellISE_profile.ps1
+	Author        : Luke Leigh
+	Created       : 16/03/2019
+	Notes         : This script has been created in order pre-configure the following setting:-
+					- Shell Title - Rebranded
+					- Shell Dimensions configured to 170 Width x 45 Height
+					- Buffer configured to 9000 lines
+					- Creates GitHub Local Repository PSDrives and Onedrive PSDrives
+
+	EG
+	Name                  Root
+	----                  ----
+	blogsite              C:\GitRepos\blogsite
+	CiscoMeraki           C:\GitRepos\CiscoMeraki
+	MSPTech               C:\GitRepos\MSPTech
+	OneDrive              C:\Users\Luke\OneDrive
+	PowerRepo             C:\GitRepos\PowerRepo
 
 - Sets starting file path to Scripts folder on ScriptsDrive
 - Loads the following Functions
-	CommandType     		Name
-	-----------     		----
+
+	CommandType     Name
+	-----------     ----
 	Function        Stop-Outlook
 	Function        Select-FolderLocation
 	Function        Get-Appointments
@@ -36,19 +38,6 @@ PowerRepo             C:\GitRepos\PowerRepo
 	Function        Get-ContainedCommand
 	Function        Show-ProfileFunctions
 
-
-	Function        Stop-Outlook
-	Function        Select-FolderLocation
-	Function        Get-Appointments
-	Function        New-Greeting
-	Function        Test-IsAdmin
-	Function        Get-ScriptDirectory
-	Function        LoadProfile
-	Function        New-ObjectToHashTable
-	Function        Get-PatchTue
-	Function        Save-Password
-	Function        Get-Password
-
 Displays
 - whether or not running as Administrator in the WindowTitle
 - the Date and Time in the Console Window
@@ -61,7 +50,6 @@ When run from Elevated Prompt
 each new PowerShell session, is configured at run and disposed of on exit)
 - Amend PSModulePath variable to include 'OneDrive\PowerShellModules'
 - Configure LocalHost TrustedHosts value
-
 - Measures script running performance and displays time upon completion
 
 #>
