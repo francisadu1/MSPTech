@@ -268,52 +268,64 @@ function Get-Password {
 	}
 }
 
+function Show-PSDrive {
+	Get-PSDrive | Format-Table -AutoSize
+}
 
 
-#--------------------
-# Configure $PSModulePath variable
-[Environment]::GetEnvironmentVariable("PSModulePath")
-$p = [Environment]::GetEnvironmentVariable("PSModulePath")
-$ModuleDrive = Join-Path -Resolve -Path "$env:OneDriveConsumer" -ChildPath .\Documents\WindowsPowerShell\Modules
-$p += ";$ModuleDrive"
-[Environment]::SetEnvironmentVariable("PSModulePath",$p)
+function Get-ContainedCommand
+{
+   param
+   (
+       [Parameter(Mandatory)][string]
+       $Path,
+
+       [string][ValidateSet('FunctionDefinition','Command' )]
+       $ItemType
+   )
+
+   $Token = $Err = $null
+   $ast = [Management.Automation.Language.Parser]::ParseFile( $Path, [ref] $Token, [ref] $Err)
+
+   $ast.FindAll({ $args[0].GetType(). Name -eq "${ItemType}Ast" }, $true )
+
+}
+
+function Show-ProfileFunctions {
+	$Path = $profile
+	$functionNames = Get-ContainedCommand $Path -ItemType FunctionDefinition |
+	Select-Object -ExpandProperty Name
+	$functionNames
+}
+
+
 
 #--------------------
 # Display running as Administrator in WindowTitle
 if(Test-IsAdmin) {
-# Configure Execution Policy
-Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process -Force
-#--------------------
-# Update PowerShell Help
-$PatchTue = Get-PatchTue -month (Get-Date).Month -year (Get-Date).Year
-if ((get-date).ToShortDateString() -eq ($PatchTue).ToShortDateString()) {
-	Update-Help -Force
-}
-
-#--------------------
-# Configure LocalHost TrustedHosts value for remote WMI access over http/https
-$TrustedHosts = Get-Item WSMAN:\localhost\Client\TrustedHosts | Select-Object -Property *
-if ($TrustedHosts.Value = $false) {
-	Set-Item WSMAN:\localhost\Client\TrustedHosts -value *
-}
-$host.UI.RawUI.WindowTitle = "$($env:USERNAME) Elevated Shell"
+	Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process -Force
+	$PatchTue = Get-PatchTue -month (Get-Date).Month -year (Get-Date).Year
+	if ((get-date).ToShortDateString() -eq ($PatchTue).ToShortDateString()) {
+		Update-Help -Force
+	}
+	$TrustedHosts = Get-Item WSMAN:\localhost\Client\TrustedHosts | Select-Object -Property *
+	if ($TrustedHosts.Value = $false) {
+		Set-Item WSMAN:\localhost\Client\TrustedHosts -value *
+	}
+	$host.UI.RawUI.WindowTitle = "$($env:USERNAME) Elevated Shell"
 }
 else{
 	$host.UI.RawUI.WindowTitle = "$($env:USERNAME) Non-elevated Shell"
 }
 
-
-#--------------------
-# Configure Shell Default Parameters
 $console = $host.UI.RawUI
-
 $buffer = $console.BufferSize
-$buffer.Width = 150
+$buffer.Width = 170
 $buffer.Height = 9000
 $console.BufferSize = $buffer
 
 $size = $console.WindowSize
-$size.Width = 150
+$size.Width = 170
 $size.Height = 45
 $console.WindowSize = $size
 
@@ -330,6 +342,10 @@ if ($GitExist = $true) {
 			New-PSDrive -Name $item.Name -PSProvider "FileSystem" -Root $item.FullName
 		}
 	}
+}
+
+
+if ($env:USERDNSDOMAIN -eq 'domain.leigh-services.com' ) {
 	$PersonalOneDrive = $env:OneDriveConsumer
 	$OneDriveConsumer = Test-Path -Path $PersonalOneDrive
 	if ($OneDriveConsumer = $true) {
@@ -340,7 +356,11 @@ if ($GitExist = $true) {
 	if ($OneDriveCommercial = $true) {
 		New-PSDrive -Name "OneDriveBusiness" -PSProvider "FileSystem" -Root $env:OneDriveCommercial
 	}
-	Set-Location -Path PowerShellScripts:
+	[Environment]::GetEnvironmentVariable("PSModulePath")
+	$p = [Environment]::GetEnvironmentVariable("PSModulePath")
+	$ModuleDrive = Join-Path -Resolve -Path "$env:OneDriveConsumer" -ChildPath .\Documents\WindowsPowerShell\Modules
+	$p += ";$ModuleDrive"
+	[Environment]::SetEnvironmentVariable("PSModulePath",$p)
 }
 
 
