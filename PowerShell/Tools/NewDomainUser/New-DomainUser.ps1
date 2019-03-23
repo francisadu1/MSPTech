@@ -8,13 +8,13 @@
         User account is created within the relevant departmental OU, default user account password is generated, details are emailed to the departmental manager of the new employee.
 
     .EXAMPLE
-        New-DomainUser  -givenName Luke -sn Leigh -title "Director of Awesome" -reportsTo "Absolutely Nobody" -location "Container Central" -mobile "07977 532524"
+        New-DomainUser  -givenName Luke -sn Leigh -title "Director of Awesome" -reportsTo "Absolutely Nobody" -location "Container Central" -mobile "07977 555555"
 
         Your name is:  Luke Leigh
         Title:         Director of Awesome
         Reporting to:  Absolutely Nobody
         Office:        Container Central
-        Mobile:        07977 532524
+        Mobile:        07977 555555
 
         Create new user details using all parameters
 
@@ -52,7 +52,7 @@
         Title:          Director of Awesome
         Reporting to:   Absolutely Nobody
         Office:         Container Central
-        Mobile:         07977 532524
+        Mobile:         07977 555555
         Password:       KDWuyRuH.198
     .NOTES
         General notes
@@ -156,18 +156,39 @@ process {
     $Special = Invoke-RestMethod -Uri "https://passwordwolf.com/api/?length=1&upper=off&lower=off&numbers=off&special=on&exclude={}][<>~¬&repeat=1"
     $Numbers = Invoke-RestMethod -Uri "https://passwordwolf.com/api/?length=3&upper=off&lower=off&numbers=on&special=off&repeat=1"
     $password = $Alphas.password + $Special.password + $Numbers.password
-    "Your name is:  $givenName $sn"
-    "Title:         $title"
-    "Reporting to:  $reportsTo"
-    "Office:        $location"
-    "Mobile:        $mobile"
-    "Password:      $password"
+    $DisplayName = $givenName + " " + $sn
+    $SamAccountName = $sn+$givenName.Substring(0,1)
+    $UPN = $givenName + "." + $sn + "@electralink.co.uk"
+    $remoteRoute = $givenName + "." + $sn + "@electralinkltd.mail.onmicrosoft.com"
+    $Company = "ElectraLink Ltd"
+    $OU = "OU=Departments,OU=Electralink Users,DC=electralink,DC=co,DC=uk"
+
+    ""
+    "Full Name:         $givenName $sn"
+    "Title:             $title"
+    "Reporting to:      $reportsTo"
+    "Office:            $location"
+    "Mobile:            $mobile"
+    "Password:          $password"
+    "Display Name:      $DisplayName"
+    "SamAccountName:    $SamAccountName"
+    "UPN:               $UPN"
+    "Remote Route:      $remoteRoute"
+    "OU:                $OU"
+    ""
+
     # $givenName
     # $sn
     # $title
     # $reportsTo
     # $location
     # $mobile
+    # $password
+    # $DisplayName
+    # $SamAccountName
+    # $UPN
+    # $remoteRoute
+    # $OU
 }
 
 end {
