@@ -85,7 +85,7 @@ function Get-Uptime
 					'ID' = 6005
 				}
 				## Find the first event (which will always be the most recent)
-				$startEvent = Get-WinEvent -ComputerName $computer -FilterHashtable $filterHt | select -First 1
+				$startEvent = Get-WinEvent -ComputerName $computer -FilterHashtable $filterHt | Select-Object -First 1
 				
 				## Set the status to be ERROR and throw an exception if we can't find the start event for some reason.
 				if (-not $startEvent)
