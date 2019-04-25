@@ -1,0 +1,1 @@
+C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -PSConsoleFile "C:\Program Files\Microsoft\Exchange Server\V14\bin\exshell.psc1" -noexit -command ". 'C:\Program Files\Microsoft\Exchange Server\V14\bin\RemoteExchange.ps1'; E:\Scripts\HostedMailboxSizes.ps1"
