@@ -8,7 +8,7 @@
         DocTOC -Title 'Table of content'
         DocPageBreak
         DocText {
-            "This document provides low-level documentation of Active Directory infrastructure in Evotec organization. This document contains general data that has been exported from Active Directory and provides an overview of the whole environment."
+            "This document provides low-level documentation of Active Directory infrastructure at Leigh Services. This document contains general data that has been exported from Active Directory and provides an overview of the whole environment."
         }
         DocNumbering -Text 'General Information - Forest Summary' -Level 0 -Type Numbered -Heading Heading1 {
             DocText {

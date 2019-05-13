@@ -7,7 +7,7 @@ $Reports = @(
     'ADComputerChangesDetailed'
     'ADUserStatus'
     'ADUserLockouts'
-    #ADUserLogon
+    #'ADUserLogon'
     'ADUserUnlocked'
     'ADComputerCreatedChanged'
     'ADComputerDeleted'
@@ -20,10 +20,10 @@ $Reports = @(
     'ADGroupPolicyChanges'
     'ADLogsClearedSecurity'
     'ADLogsClearedOther'
-    #ADEventsReboots
+    #'ADEventsReboots'
 )
 
-$Events = Find-Events -Report $Reports -DatesRange Last3days -Servers 'LSERV-DC01', 'LSERV-DC02' -Verbose
+$Events = Find-Events -Report $Reports -DatesRange Everything -Servers 'LSERV-DC01', 'LSERV-DC02' -Verbose
 
 Dashboard -FilePath $PSScriptRoot\DashboardFromEvents.html -Name 'Dashimo - FindEvents' -Show {
     Tab -Name 'Computer Changes' {
